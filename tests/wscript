@@ -1,0 +1,30 @@
+def unit_test_exception(ctx):
+    lst=getattr(ctx, 'utest_results', [])
+    if lst and len([x for x in lst if x[1]]):
+        ctx.fatal('One or more tests failed.')
+
+def build(ctx):
+    from waflib.Tools import waf_unit_test
+    from waflib import Context
+
+    appname=getattr(Context.g_module,Context.APPNAME)
+    version=getattr(Context.g_module,Context.VERSION)
+
+    sources = [
+        'optional_string',
+        'component',
+        'expression',
+        'basic',
+        'stream',
+    ]
+
+    for filename in sources:
+        ctx(features     = 'cxx cprogram test',
+            source       = '%s.cpp'%filename,
+            use          = '%s-%s'%(appname, version),
+            includes     = '..',
+            install_path = None,
+            target       = filename
+        )
+    ctx.add_post_fun(waf_unit_test.summary)
+    ctx.add_post_fun(unit_test_exception)

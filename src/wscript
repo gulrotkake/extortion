@@ -1,0 +1,11 @@
+def build(ctx):
+    from waflib import Context
+    appname=getattr(Context.g_module,Context.APPNAME)
+    version=getattr(Context.g_module,Context.VERSION)
+
+    ctx(
+        features = 'cxx cxxstlib',
+        target   = '%s-%s'%(appname, version),
+        source   = ctx.path.ant_glob('*.cpp'),
+        use      = 'EXPAT',
+    )
