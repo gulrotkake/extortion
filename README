@@ -1,0 +1,18 @@
+Example:
+
+void callback(const std::string &greeting) {
+    std::cout << greeting << std::endl;
+}
+
+...
+
+{
+    extortion::extortion e;
+    e.get("/hello/world[@planet='earth']", callback);
+    e.parse_string(
+        "<hello>"
+            "<world planet='mercury'>Hello, mercury!</world>"
+            "<world planet='earth'>Hello, earth!</world>"
+        "</hello>"
+    );
+}

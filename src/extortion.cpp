@@ -6,7 +6,7 @@
 #include <expat.h>
 
 #include <list>
-#include <map>
+#include <stack>
 #include <boost/scope_exit.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
@@ -44,15 +44,13 @@ class extortion::impl {
     XML_Parser parser;
 
     std::list<detail::expression> expressions;
-    typedef std::multimap<unsigned, detail::expression*> expression_set;
-    expression_set exs;
-    unsigned depth;
-
+    typedef std::vector<detail::expression*> expression_set;
+    std::stack<expression_set> exs;
     detail::active_set recorders;
+
 public:
     impl() :
-        parser(XML_ParserCreate(0)),//NS(0, '|')),
-        depth(0)
+        parser(XML_ParserCreate(0))
     {
         XML_SetElementHandler(
             parser,
@@ -74,39 +72,31 @@ public:
 
     void start_element(const XML_Char *name, const XML_Char **atts) {
         recorders << '<' << name << atts << '>';
-        expression_set::const_iterator first(exs.lower_bound(depth));
-        expression_set::const_iterator last(exs.upper_bound(depth));
-        ++depth;
+        expression_set::const_iterator first(exs.top().begin());
+        expression_set::const_iterator last(exs.top().end());
 
-        expression_set next_generation;
+        exs.push(expression_set());
+        std::vector<detail::expression*> &next_generation = exs.top();
 
         for (; first!=last; ++first) {
-            detail::expression *ex = first->second;
-            detail::component &comp = ex->components[depth-1];
+            detail::component &comp = (*first)->components[exs.size()-2];
             if (comp.match(name, atts)) {
                 // End of expression and everything matched, start recording.
-                if (depth == ex->components.size()) {
+                if (exs.size()-1 == (*first)->components.size()) {
                     boost::apply_visitor(
-                        detail::callback_visitor(recorders, depth), ex->cb
+                        detail::callback_visitor(recorders, exs.size()-1),
+                        (*first)->cb
                     );
                 } else {
-                    // Expression has matched far, move on.
-                    next_generation.insert(std::make_pair(depth, ex));
+                    next_generation.push_back(*first);
                 }
             }
         }
-
-        std::copy(
-            next_generation.begin(),
-            next_generation.end(),
-            std::inserter(exs, exs.end())
-        );
     }
 
     void end_element(const XML_Char *name) {
-        exs.erase(exs.lower_bound(depth), exs.end());
-        recorders.clear(depth);
-        --depth;
+        exs.pop();
+        recorders.clear(exs.size());
         recorders << '<' << '/' << name << '>';
     }
 
@@ -130,7 +120,10 @@ public:
             if(!commit) {
                 expressions.pop_back();
             } else {
-                exs.insert(std::make_pair(0, &(expressions.back())));
+                if (exs.empty()) {
+                    exs.push(expression_set());
+                }
+                exs.top().push_back(&(expressions.back()));
             }
         } BOOST_SCOPE_EXIT_END;
 

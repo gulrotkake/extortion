@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(basic_match_with_attibutes) {
 
     BOOST_REQUIRE(
         e.get(
-            "/hello/world[planet='earth']",
+            "/hello/world[@planet='earth']",
             boost::bind(&std::vector<std::string>::push_back, &storage, _1)
         )
     );

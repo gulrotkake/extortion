@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(stream_match_attribute) {
     accumulator a;
     BOOST_REQUIRE(
         e.stream(
-            "/hello/world[planet='earth']",
+            "/hello/world[@planet='earth']",
             boost::bind(&accumulator::write, boost::ref(a), _1, _2, _3)
         )
     );

@@ -44,8 +44,9 @@ struct path : boost::spirit::qi::grammar<Iterator, expression()> {
         // attributes = pair , { ( ";" | "&" ) , pair }
         attributes_r  = pair_r >> *((qi::lit(';') | '&') >> pair_r);
 
-        // pair       = key , [ "=" , value ]
-        pair_r        = key_r >> -('=' >> value_r);
+        // pair       = ("@" | "attribue::") , key , [ "=" , value ]
+        pair_r        = qi::omit[(qi::lit("@") | qi::lit("attribute::"))]
+                        >> key_r >> -('=' >> value_r);
 
         // key        = alpha , { alnum }
         key_r         = qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9");

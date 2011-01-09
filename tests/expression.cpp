@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(parse_attribute_key_values) {
     extortion::detail::expression x;
     BOOST_REQUIRE(
         extortion::detail::parse(
-            "/hello[name='world']/where[planet='earth']/",
+            "/hello[attribute::name='world']/where[@planet='earth']/",
             x
         )
     );
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(parse_attribute_key) {
 
     extortion::detail::expression x;
     BOOST_REQUIRE(
-        extortion::detail::parse("/hello[name='world']/where[planet]/", x)
+        extortion::detail::parse("/hello[@name='world']/where[@planet]/", x)
     );
 
     BOOST_CHECK_EQUAL(
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(parse_multiple_attributes) {
     extortion::detail::expression x;
     BOOST_REQUIRE(
         extortion::detail::parse(
-            "/greeting[type='hello'&name='world'&planet]",
+            "/greeting[@type='hello'&@name='world'&@planet]",
             x
         )
     );
@@ -168,6 +168,7 @@ BOOST_AUTO_TEST_CASE(parse_bad_input) {
         "/hello[name='''",
         "/hello[n/ame]",
         "/hello[name",
+        "/hello[name]",
         "/[name]"
     };
 
