@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(parse_attribute_key_values) {
     extortion::detail::expression x;
     BOOST_REQUIRE(
         extortion::detail::parse(
-            "/hello[attribute::name='world']/where[@planet='earth']/",
+            "/hello[@name='world']/where[@planet='earth']/",
             x
         )
     );
